@@ -111,8 +111,59 @@ export const sampleArticles: Article[] = [
   }
 ];
 
-// Helper functions
+// Helper functions - these will be replaced with Supabase queries
 export const getFeaturedArticles = () => sampleArticles.filter(article => article.featured);
 export const getArticlesByCategory = (category: string) => 
   category === "All" ? sampleArticles : sampleArticles.filter(article => article.category === category);
 export const getArticleById = (id: string) => sampleArticles.find(article => article.id === id);
+
+// New Supabase helper functions
+import { supabase } from '@/integrations/supabase/client';
+
+export const getArticlesFromDB = async () => {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+};
+
+export const getFeaturedArticlesFromDB = async () => {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('featured', true)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+};
+
+export const getArticlesByCategoryFromDB = async (category: string) => {
+  let query = supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false });
+    
+  if (category !== "All") {
+    query = query.eq('category', category);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) throw error;
+  return data || [];
+};
+
+export const getArticleByIdFromDB = async (id: string) => {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) throw error;
+  return data;
+};

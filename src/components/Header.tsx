@@ -1,8 +1,10 @@
-import { Search, BookOpen, Menu } from "lucide-react";
+import { Search, BookOpen, Menu, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const categories = [
   { name: "All", path: "/" },
@@ -17,6 +19,12 @@ const categories = [
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
 
   const isActive = (path: string) => {
     if (path === "/" && location.pathname === "/") return true;
@@ -52,7 +60,7 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Search */}
+          {/* Search & Auth */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -61,6 +69,30 @@ export function Header() {
                 className="pl-10 w-64"
               />
             </div>
+            
+            {user ? (
+              <div className="flex items-center gap-3">
+                {isAdmin && (
+                  <>
+                    <Badge variant="secondary">Admin</Badge>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/admin">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    </Button>
+                  </>
+                )}
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -92,7 +124,7 @@ export function Header() {
                   {category.name}
                 </Link>
               ))}
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -100,6 +132,39 @@ export function Header() {
                     className="pl-10"
                   />
                 </div>
+                
+                {user ? (
+                  <div className="space-y-2">
+                    {isAdmin && (
+                      <>
+                        <Badge variant="secondary" className="mb-2">Admin</Badge>
+                        <Link 
+                          to="/admin" 
+                          className="block px-3 py-2 text-sm font-medium hover:text-primary transition-colors rounded-md hover:bg-secondary"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Settings className="mr-2 h-4 w-4 inline" />
+                          Admin Panel
+                        </Link>
+                      </>
+                    )}
+                    <button 
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-3 py-2 text-sm font-medium hover:text-primary transition-colors rounded-md hover:bg-secondary"
+                    >
+                      <LogOut className="mr-2 h-4 w-4 inline" />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <Link 
+                    to="/auth" 
+                    className="block px-3 py-2 text-sm font-medium hover:text-primary transition-colors rounded-md hover:bg-secondary"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
               </div>
             </nav>
           </div>
